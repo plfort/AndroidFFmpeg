@@ -83,6 +83,7 @@ jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
 		goto bail;
 	}
 
+
 	/* success -- return valid version number */
 	result = JNI_VERSION_1_4;
 

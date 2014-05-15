@@ -20,7 +20,6 @@ package com.appunite.ffmpeg;
 
 import java.util.Map;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -32,6 +31,7 @@ public class FFmpegPlayer {
 	private static class StopTask extends AsyncTask<Void, Void, Void> {
 
 		private final FFmpegPlayer player;
+		
 
 		public StopTask(FFmpegPlayer player) {
 			this.player = player;
@@ -197,7 +197,7 @@ public class FFmpegPlayer {
 	private final RenderedFrame mRenderedFrame = new RenderedFrame();
 
 	private int mNativePlayer;
-	private final Activity activity;
+	private AudioTrack audioTrack;
 
 	private Runnable updateTimeRunnable = new Runnable() {
 
@@ -222,13 +222,16 @@ public class FFmpegPlayer {
 		public int width;
 	}
 
-	public FFmpegPlayer(FFmpegDisplay videoView, Activity activity) {
-		this.activity = activity;
+	public FFmpegPlayer(FFmpegDisplay videoView) {
+		//this.activity = activity;
 		int error = initNative();
 		if (error != 0)
 			throw new RuntimeException(String.format(
 					"Could not initialize player: %d", error));
-		videoView.setMpegPlayer(this);
+		if(videoView != null ){
+			videoView.setMpegPlayer(this);
+		}
+		
 	}
 
 	@Override
@@ -310,7 +313,9 @@ public class FFmpegPlayer {
 		this.mCurrentTimeUs = currentUs;
 		this.mVideoDurationUs = maxUs;
 		this.mIsFinished  = isFinished;
-		activity.runOnUiThread(updateTimeRunnable);
+		if(this.mpegListener !=null){
+			mpegListener.onFFUpdateTime(currentUs, maxUs, isFinished);
+		}
 	}
 
 	private AudioTrack prepareAudioTrack(int sampleRateInHz,
@@ -340,8 +345,8 @@ public class FFmpegPlayer {
 			}
 			try {
 				int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
-						channelConfig, AudioFormat.ENCODING_PCM_16BIT);
-				AudioTrack audioTrack = new AudioTrack(
+						channelConfig, AudioFormat.ENCODING_PCM_16BIT)*3;
+				audioTrack = new AudioTrack(
 						AudioManager.STREAM_MUSIC, sampleRateInHz,
 						channelConfig, AudioFormat.ENCODING_PCM_16BIT,
 						minBufferSize, AudioTrack.MODE_STREAM);

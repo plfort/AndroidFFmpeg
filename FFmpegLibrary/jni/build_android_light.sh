@@ -284,35 +284,28 @@ EOF
 	    --enable-protocol=file \
 	    --enable-protocol=rtp \
 	    --enable-protocol=tcp \
-	    --enable-protocol=udp \
-	    --enable-protocol=applehttp \
 	    --enable-protocol=hls \
 	    --enable-protocol=http \
-	    --enable-decoder=xsub \
-	    --enable-decoder=jacosub \
-	    --enable-decoder=dvdsub \
-	    --enable-decoder=dvbsub \
-	    --enable-decoder=subviewer \
 	    --enable-decoder=rawvideo \
-	    --enable-encoder=rawvideo \
 	    --enable-decoder=mjpeg \
-	    --enable-encoder=mjpeg \
 	    --enable-decoder=h263 \
 	    --enable-decoder=mpeg4 \
-	    --enable-encoder=mpeg4 \
 	    --enable-decoder=h264 \
-	    --enable-encoder=h264 \
 	    --enable-decoder=aac \
-	    --enable-encoder=aac \
 	    --enable-parser=h264 \
-	    --enable-encoder=mp2 \
 	    --enable-decoder=mp2 \
-	    --enable-encoder=libvo_amrwbenc \
 	    --enable-decoder=amrwb \
 	    --enable-muxer=mp2 \
+	    --disable-demuxer=srt \
+        --disable-demuxer=microdvd \
+        --disable-demuxer=jacosub \
+        --disable-decoder=ass \
+        --disable-decoder=srt \
+        --disable-decoder=microdvd \
+        --disable-decoder=jacosub \
 	    --enable-bsfs \
 	    --enable-decoders \
-	    --enable-encoders \
+	    --disable-encoders \
 	    --enable-parsers \
 	    --enable-hwaccels \
 	    --enable-muxers \
@@ -343,7 +336,7 @@ EOF
 function build_one {
 	cd ffmpeg
 	PLATFORM=$NDK/platforms/$PLATFORM_VERSION/arch-$ARCH/
-	$PREBUILT/bin/$EABIARCH-ld -rpath-link=$PLATFORM/usr/lib -L$PLATFORM/usr/lib -L$PREFIX/lib  -soname $SONAME -shared -nostdlib  -z,noexecstack -Bsymbolic --whole-archive --no-undefined -o $OUT_LIBRARY -lavcodec -lavformat -lavresample -lavutil -lswresample -lass -lfreetype -lfribidi -lswscale -lvo-aacenc -lvo-amrwbenc -lc -lm -lz -ldl -llog  --warn-once  --dynamic-linker=/system/bin/linker -zmuldefs $PREBUILT/lib/gcc/$EABIARCH/4.4.3/libgcc.a || exit 1
+	$PREBUILT/bin/$EABIARCH-ld -rpath-link=$PLATFORM/usr/lib -L$PLATFORM/usr/lib -L$PREFIX/lib  -soname $SONAME -shared -nostdlib  -z noexecstack -Bsymbolic --whole-archive --no-undefined -o $OUT_LIBRARY -lavcodec -lavformat -lavresample -lavutil -lswresample -lass -lfreetype -lfribidi -lswscale -lvo-aacenc -lvo-amrwbenc -lc -lm -lz -ldl -llog  --dynamic-linker=/system/bin/linker -zmuldefs $PREBUILT/lib/gcc/$EABIARCH/4.7/libgcc.a || exit 1
 	cd ..
 }
 
@@ -356,7 +349,7 @@ PREFIX=../ffmpeg-build/armeabi
 OUT_LIBRARY=$PREFIX/libffmpeg.so
 ADDITIONAL_CONFIGURE_FLAG=
 SONAME=libffmpeg.so
-PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.8/prebuilt/$OS-x86_64
+PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.7/prebuilt/$OS-x86_64
 PLATFORM_VERSION=android-5
 build_amr
 build_aac
@@ -367,40 +360,40 @@ build_ffmpeg
 build_one
 
 #x86
-#EABIARCH=i686-linux-android
-#ARCH=x86
-#OPTIMIZE_CFLAGS="-m32"
-#PREFIX=../ffmpeg-build/x86
-#OUT_LIBRARY=$PREFIX/libffmpeg.so
-#ADDITIONAL_CONFIGURE_FLAG=--disable-asm
-#SONAME=libffmpeg.so
-#PREBUILT=$NDK/toolchains/x86-4.4.3/prebuilt/$OS-x86_64
-#PLATFORM_VERSION=android-9
-#build_amr
-#build_aac
-#build_fribidi
-#build_freetype2
-#build_ass
-#build_ffmpeg
-#build_one
+EABIARCH=i686-linux-android
+ARCH=x86
+OPTIMIZE_CFLAGS="-m32"
+PREFIX=../ffmpeg-build/x86
+OUT_LIBRARY=$PREFIX/libffmpeg.so
+ADDITIONAL_CONFIGURE_FLAG=--disable-asm
+SONAME=libffmpeg.so
+PREBUILT=$NDK/toolchains/x86-4.7/prebuilt/$OS-x86_64
+PLATFORM_VERSION=android-9
+build_amr
+build_aac
+build_fribidi
+build_freetype2
+build_ass
+build_ffmpeg
+build_one
 
 #mips
-#EABIARCH=mipsel-linux-android
-#ARCH=mips
-#OPTIMIZE_CFLAGS="-EL -march=mips32 -mips32 -mhard-float"
-#PREFIX=../ffmpeg-build/mips
-#OUT_LIBRARY=$PREFIX/libffmpeg.so
-#ADDITIONAL_CONFIGURE_FLAG="--disable-mips32r2"
-#SONAME=libffmpeg.so
-#PREBUILT=$NDK/toolchains/mipsel-linux-android-4.4.3/prebuilt/$OS-x86_64
-#PLATFORM_VERSION=android-9
-#build_amr
-#build_aac
-#build_fribidi
-#build_freetype2
-#build_ass
-#build_ffmpeg
-#build_one
+EABIARCH=mipsel-linux-android
+ARCH=mips
+OPTIMIZE_CFLAGS="-EL -march=mips32 -mips32 -mhard-float"
+PREFIX=../ffmpeg-build/mips
+OUT_LIBRARY=$PREFIX/libffmpeg.so
+ADDITIONAL_CONFIGURE_FLAG="--disable-mips32r2"
+SONAME=libffmpeg.so
+PREBUILT=$NDK/toolchains/mipsel-linux-android-4.7/prebuilt/$OS-x86_64
+PLATFORM_VERSION=android-9
+build_amr
+build_aac
+build_fribidi
+build_freetype2
+build_ass
+build_ffmpeg
+build_one
 
 #arm v7vfpv3
 EABIARCH=arm-linux-androideabi
@@ -411,7 +404,7 @@ PREFIX=../ffmpeg-build/armeabi-v7a
 OUT_LIBRARY=$PREFIX/libffmpeg.so
 ADDITIONAL_CONFIGURE_FLAG=
 SONAME=libffmpeg.so
-PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.8/prebuilt/$OS-x86_64
+PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.7/prebuilt/$OS-x86_64
 PLATFORM_VERSION=android-5
 build_amr
 build_aac
@@ -430,7 +423,7 @@ PREFIX=../ffmpeg-build/armeabi-v7a-neon
 OUT_LIBRARY=../ffmpeg-build/armeabi-v7a/libffmpeg-neon.so
 ADDITIONAL_CONFIGURE_FLAG=--enable-neon
 SONAME=libffmpeg-neon.so
-PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.8/prebuilt/$OS-x86_64
+PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.7/prebuilt/$OS-x86_64
 PLATFORM_VERSION=android-9
 build_amr
 build_aac

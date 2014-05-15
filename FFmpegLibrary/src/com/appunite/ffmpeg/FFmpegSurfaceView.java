@@ -21,6 +21,7 @@ package com.appunite.ffmpeg;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -53,17 +54,22 @@ public class FFmpegSurfaceView extends SurfaceView implements FFmpegDisplay,
 
 	@Override
 	public void setMpegPlayer(FFmpegPlayer fFmpegPlayer) {
-		if (mMpegPlayer != null)
-			throw new RuntimeException(
-					"setMpegPlayer could not be called twice");
+		if (mMpegPlayer != null){
+			return;
+		}
+		/*	throw new RuntimeException(
+					"setMpegPlayer could not be called twice");*/
 
 		this.mMpegPlayer = fFmpegPlayer;
+		if(mCreated){
+			mMpegPlayer.render(getHolder().getSurface());
+		}
 	}
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
-		
+	
 	}
 
 	@Override
@@ -73,13 +79,21 @@ public class FFmpegSurfaceView extends SurfaceView implements FFmpegDisplay,
 		}
 
 		Surface surface = holder.getSurface();
-		mMpegPlayer.render(surface);
+		if(mMpegPlayer!=null){
+			Log.d("FFMpegSurface", "call render");
+			mMpegPlayer.render(surface);
+		}
 		mCreated = true;
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		this.mMpegPlayer.renderFrameStop();
+		Log.d("FFMpegSurface", "surfaceDestroyed");
+		if(mMpegPlayer!=null){
+			Log.d("FFMpegSurface", "call renderFrameStop");
+			this.mMpegPlayer.renderFrameStop();
+			
+		}
 		mCreated = false;
 	}
 

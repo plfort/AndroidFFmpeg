@@ -33,15 +33,16 @@ public class MainActivity extends Activity implements OnItemClickListener {
 				"Kings Of Leon-Charmer unencrypted",
 				getSDCardFile("airbender/videos/Videoguides-Riga_SIL_engrus_1500.mp4"),
 				null });
+		
 		cursor.addRow(new Object[] {
 				2,
-				"TheThreeStooges",
-				"http://192.168.0.200:81/TheThreeStooges_ENGRUS_engjapchi.mp4",
+				"Daft",
+				"http://192.168.0.19/youtubeprovider/web/daft.mp4",
 				null });
 		cursor.addRow(new Object[] {
 				3,
-				"Apple sample",
-				"http://devimages.apple.com.edgekey.net/resources/http-streaming/examples/bipbop_4x3/bipbop_4x3_variant.m3u8",
+				"Jamendo",
+				"http://storage-new.newjamendo.com/download/track/235870/mp31/",
 				null });
 		cursor.addRow(new Object[] {
 				4,

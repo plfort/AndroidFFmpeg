@@ -115,7 +115,7 @@ public class VideoActivity extends Activity implements OnClickListener,
 		mLoadingView = this.findViewById(R.id.loading_view);
 		mLanguageSpinner = (Spinner) this.findViewById(R.id.language_spinner);
 		mSubtitleSpinner = (Spinner) this.findViewById(R.id.subtitle_spinner);
-
+		
 		mLanguageAdapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_spinner_item, null, PROJECTION,
 				new int[] { android.R.id.text1 }, 0);
@@ -135,7 +135,7 @@ public class VideoActivity extends Activity implements OnClickListener,
 		mSubtitleSpinner.setOnItemSelectedListener(this);
 
 		mVideoView = this.findViewById(R.id.video_view);
-		mMpegPlayer = new FFmpegPlayer((FFmpegDisplay) mVideoView, this);
+		mMpegPlayer = new FFmpegPlayer((FFmpegDisplay) mVideoView);
 		mMpegPlayer.setMpegListener(this);
 		setDataSource();
 	}
@@ -258,6 +258,7 @@ public class VideoActivity extends Activity implements OnClickListener,
 		MatrixCursor subtitles = new MatrixCursor(PROJECTION);
 		subtitles.addRow(new Object[] {"None", FFmpegPlayer.NO_STREAM});
 		for (FFmpegStreamInfo streamInfo : streams) {
+			
 			CodecType mediaType = streamInfo.getMediaType();
 			Locale locale = streamInfo.getLanguage();
 			String languageName = locale == null ? getString(
@@ -267,6 +268,7 @@ public class VideoActivity extends Activity implements OnClickListener,
 			} else if (FFmpegStreamInfo.CodecType.SUBTITLE.equals(mediaType)) {
 				subtitles.addRow(new Object[] {languageName, streamInfo.getStreamNumber()});
 			}
+			
 		}
 		mLanguageAdapter.swapCursor(audio);
 		mSubtitleAdapter.swapCursor(subtitles);

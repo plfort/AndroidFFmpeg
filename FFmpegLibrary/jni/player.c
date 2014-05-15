@@ -66,7 +66,7 @@
 #define FALSE 0
 #define TRUE (!(FALSE))
 
-#define SUBTITLES
+//#define SUBTITLES
 
 #ifdef SUBTITLES
 #include "blend.h"
@@ -75,9 +75,9 @@
 #define DO_NOT_SEEK -1
 
 // 1000000 us = 1 s
-#define MIN_SLEEP_TIME_US 10000
-// 10000 ms = 1s
-#define MIN_SLEEP_TIME_MS 2
+#define MIN_SLEEP_TIME_US 1000ll
+
+#define AUDIO_TIME_ADJUST_US -200000ll
 
 //#define MEASURE_TIME
 
@@ -744,7 +744,7 @@ enum WaitFuncRet player_wait_for_frame(struct Player *player, int64_t stream_tim
 			pthread_cond_broadcast(&player->cond_queue);
 		}
 
-		if (sleep_time <= MIN_SLEEP_TIME_MS) {
+		if (sleep_time <= MIN_SLEEP_TIME_US) {
 			// We do not need to wait if time is slower then minimal sleep time
 			break;
 		}
@@ -785,6 +785,14 @@ int player_decode_video(struct DecoderData * decoder_data, JNIEnv * env,
 	ANativeWindow_Buffer buffer;
 	ANativeWindow * window;
 
+	pthread_mutex_lock(&player->mutex_queue);
+		window = player->window;
+		if (window == NULL) {
+			//LOGE(1,"Window is NULL skip frame");
+			pthread_mutex_unlock(&player->mutex_queue);
+			goto skip_frame;
+		}
+    pthread_mutex_unlock(&player->mutex_queue);
 #ifdef MEASURE_TIME
 	struct timespec timespec1, timespec2, diff;
 #endif // MEASURE_TIME
@@ -805,7 +813,8 @@ int player_decode_video(struct DecoderData * decoder_data, JNIEnv * env,
 
 	if (ret < 0) {
 		LOGE(1, "player_decode_video Fail decoding video %d\n", ret);
-		return -ERROR_WHILE_DECODING_VIDEO;
+		goto skip_frame;
+		//return -ERROR_WHILE_DECODING_VIDEO;
 	}
 	if (!frameFinished) {
 		LOGI(10, "player_decode_video Video frame not finished\n");
@@ -820,11 +829,12 @@ int player_decode_video(struct DecoderData * decoder_data, JNIEnv * env,
 #endif // MEASURE_TIME
 
 	pthread_mutex_lock(&player->mutex_queue);
-	window = player->window;
+	/*window = player->window;
 	if (window == NULL) {
+		//LOGE(1,"Window is NULL skip frame");
 		pthread_mutex_unlock(&player->mutex_queue);
 		goto skip_frame;
-	}
+	}*/
 	ANativeWindow_setBuffersGeometry(window, ctx->width, ctx->height,
 			WINDOW_FORMAT_RGBA_8888);
 	if (ANativeWindow_lock(window, &buffer, NULL) != 0) {
@@ -891,7 +901,7 @@ int player_decode_video(struct DecoderData * decoder_data, JNIEnv * env,
 				out_frame->data[0], out_frame->linesize[0], ctx->width,
 				ctx->height);
 	}
-	if (ctx->pix_fmt == PIX_FMT_NV12) {
+	else if (ctx->pix_fmt == PIX_FMT_NV12) {
 		__NV21ToARGB(frame->data[0], frame->linesize[0], frame->data[1],
 				frame->linesize[1], out_frame->data[0], out_frame->linesize[0],
 				ctx->width, ctx->height);
@@ -1453,7 +1463,7 @@ int player_write_audio(struct DecoderData *decoder_data, JNIEnv *env,
 		LOGI(9, "player_write_audio - added")
 	}
 	enum WaitFuncRet wait_ret = player_wait_for_frame(player,
-			player->audio_clock, stream_no);
+			player->audio_clock + AUDIO_TIME_ADJUST_US, stream_no);
 	if (wait_ret == WAIT_FUNC_RET_SKIP) {
 		goto end;
 	}
@@ -1829,7 +1839,7 @@ int player_alloc_queues(struct State *state) {
 	int capture_streams_no = player->caputre_streams_no;
 	int stream_no;
 	for (stream_no = 0; stream_no < capture_streams_no; ++stream_no) {
-		player->packets[stream_no] = queue_init_with_custom_lock(50,
+		player->packets[stream_no] = queue_init_with_custom_lock(300,
 				(queue_fill_func) player_fill_packet,
 				(queue_free_func) player_free_packet, state, state,
 				&player->mutex_queue, &player->cond_queue);
@@ -2861,7 +2871,7 @@ void jni_player_render_frame_stop(JNIEnv *env, jobject thiz) {
 
 	LOGI(5, "jni_player_render_frame_stop stopping render");
 
-	player_stop(&state);
+	//player_stop(&state);
 
 	LOGI(5, "jni_player_render_frame_stop waiting for mutex");
 	pthread_mutex_lock(&player->mutex_queue);
